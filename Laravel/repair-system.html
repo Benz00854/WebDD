@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ระบบแจ้งซ่อม | RepairHub</title>
+  <meta name="description" content="ระบบแจ้งซ่อมออนไลน์ บริหารจัดการงานซ่อมบำรุง ติดตามสถานะแบบเรียลไทม์" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg-primary: #060b18;
+      --bg-secondary: #0d1526;
+      --bg-card: rgba(15, 25, 50, 0.8);
+      --bg-glass: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+      --accent: #38bdf8;
+      --accent-dark: #0ea5e9;
+      --accent-glow: rgba(56,189,248,0.15);
+      --purple: #a78bfa;
+      --purple-glow: rgba(167,139,250,0.15);
+      --green: #34d399;
+      --green-glow: rgba(52,211,153,0.15);
+      --yellow: #fbbf24;
+      --yellow-glow: rgba(251,191,36,0.15);
+      --red: #f87171;
+      --red-glow: rgba(248,113,113,0.15);
+      --text-primary: #f0f6ff;
+      --text-secondary: #8ba4c0;
+      --text-muted: #4a6080;
+      --sidebar-w: 260px;
+      --header-h: 64px;
+      --radius: 14px;
+      --radius-sm: 8px;
+      --shadow: 0 8px 32px rgba(0,0,0,0.4);
+      --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Noto Sans Thai', 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; border: none; outline: none; font-family: inherit; }
+    input, select, textarea { font-family: inherit; outline: none; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.3); border-radius: 99px; }
+    .app { display: flex; min-height: 100vh; }
+    .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(56,189,248,0.12) 0%, transparent 70%), radial-gradient(ellipse 60% 40% at 80% 100%, rgba(167,139,250,0.1) 0%, transparent 60%), var(--bg-primary); padding: 20px; }
+    .login-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 48px 40px; width: 100%; max-width: 440px; backdrop-filter: blur(20px); box-shadow: var(--shadow), 0 0 80px rgba(56,189,248,0.05); animation: fadeUp 0.5s ease; }
+    .login-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+    .login-logo-icon { width: 48px; height: 48px; background: linear-gradient(135deg, var(--accent), var(--purple)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    .login-logo-text { font-size: 22px; font-weight: 800; }
+    .login-logo-text span { color: var(--accent); }
+    .login-title { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+    .login-sub { color: var(--text-secondary); font-size: 14px; margin-bottom: 32px; }
+    .role-tabs { display: flex; gap: 8px; margin-bottom: 28px; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 4px; }
+    .role-tab { flex: 1; padding: 8px 12px; border-radius: 7px; font-size: 13px; font-weight: 600; color: var(--text-secondary); background: transparent; transition: var(--transition); text-align: center; }
+    .role-tab.active { background: var(--accent); color: #000; }
+    .form-group { margin-bottom: 18px; }
+    .form-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; display: block; }
+    .form-input { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 14px; transition: var(--transition); }
+    .form-input:focus { border-color: var(--accent); background: rgba(56,189,248,0.05); box-shadow: 0 0 0 3px rgba(56,189,248,0.1); }
+    .form-input::placeholder { color: var(--text-muted); }
+    .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--accent-dark), var(--accent)); color: #000; font-size: 15px; font-weight: 700; border-radius: var(--radius-sm); transition: var(--transition); box-shadow: 0 4px 20px rgba(56,189,248,0.3); margin-top: 8px; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(56,189,248,0.45); }
+    .login-hint { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 20px; line-height: 1.8; }
+    .sidebar { width: var(--sidebar-w); min-height: 100vh; background: var(--bg-secondary); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; }
+    .sidebar-logo { padding: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); height: var(--header-h); }
+    .sidebar-logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--purple)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .sidebar-logo-text { font-size: 16px; font-weight: 800; }
+    .sidebar-logo-text span { color: var(--accent); }
+    .sidebar-nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
+    .nav-section { margin-bottom: 24px; }
+    .nav-section-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: var(--text-muted); text-transform: uppercase; padding: 0 8px; margin-bottom: 8px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: var(--transition); position: relative; margin-bottom: 2px; }
+    .nav-item:hover { background: var(--bg-glass); color: var(--text-primary); }
+    .nav-item.active { background: var(--accent-glow); color: var(--accent); font-weight: 600; }
+    .nav-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 60%; background: var(--accent); border-radius: 0 3px 3px 0; }
+    .nav-icon { font-size: 18px; flex-shrink: 0; }
+    .nav-badge { margin-left: auto; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 99px; min-width: 20px; text-align: center; }
+    .nav-badge.yellow { background: var(--yellow); color: #000; }
+    .sidebar-footer { padding: 16px 12px; border-top: 1px solid var(--border); }
+    .user-card { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--bg-glass); }
+    .user-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+    .user-info { flex: 1; overflow: hidden; }
+    .user-name { font-size: 13px; font-weight: 600; }
+    .user-role { font-size: 11px; color: var(--text-muted); }
+    .logout-btn { font-size: 16px; color: var(--text-muted); transition: var(--transition); background: transparent; }
+    .logout-btn:hover { color: var(--red); }
+    .main { flex: 1; margin-left: var(--sidebar-w); display: flex; flex-direction: column; min-height: 100vh; }
+    .header { height: var(--header-h); background: rgba(13,21,38,0.95); border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 50; padding: 0 28px; display: flex; align-items: center; gap: 16px; }
+    .header-title { font-size: 18px; font-weight: 700; flex: 1; }
+    .header-search { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 99px; padding: 8px 16px; width: 260px; transition: var(--transition); }
+    .header-search:focus-within { border-color: var(--accent); background: rgba(56,189,248,0.05); }
+    .header-search input { background: transparent; border: none; color: var(--text-primary); font-size: 13px; width: 100%; }
+    .header-search input::placeholder { color: var(--text-muted); }
+    .notif-btn { position: relative; width: 38px; height: 38px; background: var(--bg-glass); border: 1px solid var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: var(--transition); }
+    .notif-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .notif-dot { position: absolute; top: 7px; right: 7px; width: 8px; height: 8px; background: var(--red); border-radius: 50%; border: 2px solid var(--bg-secondary); }
+    .content { flex: 1; padding: 28px; }
+    .page-header { margin-bottom: 24px; }
+    .page-title { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+    .page-subtitle { color: var(--text-secondary); font-size: 14px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; backdrop-filter: blur(10px); transition: var(--transition); position: relative; overflow: hidden; }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+    .stat-card.blue::before { background: linear-gradient(90deg, var(--accent), transparent); }
+    .stat-card.yellow::before { background: linear-gradient(90deg, var(--yellow), transparent); }
+    .stat-card.green::before { background: linear-gradient(90deg, var(--green), transparent); }
+    .stat-card.red::before { background: linear-gradient(90deg, var(--red), transparent); }
+    .stat-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.15); box-shadow: var(--shadow); }
+    .stat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 14px; }
+    .stat-icon.blue { background: var(--accent-glow); }
+    .stat-icon.yellow { background: var(--yellow-glow); }
+    .stat-icon.green { background: var(--green-glow); }
+    .stat-icon.red { background: var(--red-glow); }
+    .stat-value { font-size: 32px; font-weight: 800; line-height: 1; margin-bottom: 6px; }
+    .stat-label { font-size: 13px; color: var(--text-secondary); }
+    .grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); backdrop-filter: blur(10px); }
+    .card-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid var(--border); }
+    .card-title { font-size: 15px; font-weight: 700; }
+    .card-body { padding: 20px 22px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 14px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 13px; color: var(--text-secondary); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .ticket-id { font-weight: 700; color: var(--accent); font-size: 12px; font-family: monospace; }
+    .td-name { font-weight: 600; color: var(--text-primary); }
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .badge-pending { background: var(--yellow-glow); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+    .badge-pending::before { background: var(--yellow); }
+    .badge-inprog { background: var(--accent-glow); color: var(--accent); border: 1px solid rgba(56,189,248,0.2); }
+    .badge-inprog::before { background: var(--accent); }
+    .badge-done { background: var(--green-glow); color: var(--green); border: 1px solid rgba(52,211,153,0.2); }
+    .badge-done::before { background: var(--green); }
+    .badge-cancelled { background: var(--red-glow); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+    .badge-cancelled::before { background: var(--red); }
+    .badge-high { background: var(--red-glow); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+    .badge-high::before { background: var(--red); }
+    .badge-mid { background: var(--yellow-glow); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+    .badge-mid::before { background: var(--yellow); }
+    .badge-low { background: var(--green-glow); color: var(--green); border: 1px solid rgba(52,211,153,0.2); }
+    .badge-low::before { background: var(--green); }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; transition: var(--transition); }
+    .btn-accent { background: linear-gradient(135deg, var(--accent-dark), var(--accent)); color: #000; box-shadow: 0 4px 14px rgba(56,189,248,0.3); }
+    .btn-accent:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(56,189,248,0.45); }
+    .btn-ghost { background: var(--bg-glass); border: 1px solid var(--border); color: var(--text-secondary); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .btn-icon { padding: 7px; border-radius: 8px; }
+    .btn-green { background: var(--green-glow); color: var(--green); border: 1px solid rgba(52,211,153,0.2); }
+    .btn-green:hover { background: rgba(52,211,153,0.2); }
+    .btn-red { background: var(--red-glow); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+    .btn-red:hover { background: rgba(248,113,113,0.2); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-full { grid-column: 1 / -1; }
+    .form-input-styled { width: 100%; padding: 11px 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 14px; transition: var(--transition); }
+    .form-input-styled:focus { border-color: var(--accent); background: rgba(56,189,248,0.05); box-shadow: 0 0 0 3px rgba(56,189,248,0.1); }
+    .form-input-styled::placeholder { color: var(--text-muted); }
+    select.form-input-styled option { background: #0d1526; }
+    textarea.form-input-styled { resize: vertical; min-height: 100px; }
+    .file-upload { border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 24px; text-align: center; cursor: pointer; transition: var(--transition); }
+    .file-upload:hover { border-color: var(--accent); background: rgba(56,189,248,0.03); }
+    .file-upload-icon { font-size: 32px; margin-bottom: 8px; }
+    .file-upload-text { font-size: 13px; color: var(--text-secondary); }
+    .file-upload-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .image-preview-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+    .image-preview-item { position: relative; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+    .image-preview-item img { width: 100%; height: 100%; object-fit: cover; }
+    .image-remove { position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; background: rgba(0,0,0,0.7); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; cursor: pointer; }
+    .filter-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+    .filter-pill { padding: 6px 14px; border-radius: 99px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); color: var(--text-secondary); background: transparent; cursor: pointer; transition: var(--transition); }
+    .filter-pill.active { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+    .filter-pill:hover { border-color: rgba(255,255,255,0.2); color: var(--text-primary); }
+    .filter-select { padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text-secondary); font-size: 12px; cursor: pointer; font-family: inherit; }
+    select.filter-select option { background: #0d1526; }
+    .action-row { display: flex; align-items: center; gap: 8px; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 18px; padding: 28px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; transform: scale(0.95) translateY(10px); transition: transform 0.25s ease; }
+    .modal-overlay.open .modal { transform: scale(1) translateY(0); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .modal-title { font-size: 18px; font-weight: 700; }
+    .modal-close { width: 32px; height: 32px; border-radius: 8px; background: var(--bg-glass); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-size: 18px; transition: var(--transition); }
+    .modal-close:hover { background: var(--red-glow); color: var(--red); }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .toast-container { position: fixed; bottom: 28px; right: 28px; z-index: 999; display: flex; flex-direction: column; gap: 10px; }
+    .toast { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 12px; background: var(--bg-secondary); border: 1px solid var(--border); box-shadow: var(--shadow); font-size: 13px; font-weight: 500; min-width: 280px; transform: translateX(110%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); }
+    .toast.show { transform: translateX(0); }
+    .toast.success { border-color: rgba(52,211,153,0.3); }
+    .toast.error { border-color: rgba(248,113,113,0.3); }
+    .toast.info { border-color: rgba(56,189,248,0.3); }
+    .detail-row { display: flex; gap: 8px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { width: 130px; flex-shrink: 0; font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding-top: 2px; }
+    .detail-value { flex: 1; font-size: 14px; color: var(--text-primary); }
+    .detail-img { width: 90px; height: 90px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); cursor: zoom-in; }
+    .timeline { margin-top: 4px; }
+    .timeline-item { display: flex; gap: 12px; padding: 10px 0; position: relative; }
+    .timeline-item::before { content: ''; position: absolute; left: 15px; top: 28px; bottom: -10px; width: 1px; background: var(--border); }
+    .timeline-item:last-child::before { display: none; }
+    .timeline-dot { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-glow); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; z-index: 1; }
+    .timeline-content { flex: 1; }
+    .timeline-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .timeline-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .tech-card { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--bg-glass); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; transition: var(--transition); }
+    .tech-card:hover { border-color: rgba(255,255,255,0.15); }
+    .tech-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; flex-shrink: 0; }
+    .tech-info { flex: 1; }
+    .tech-name { font-size: 14px; font-weight: 600; }
+    .tech-spec { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .tech-stat { text-align: right; font-size: 12px; color: var(--text-secondary); }
+    .tech-stat strong { font-size: 16px; color: var(--accent); display: block; }
+    .task-card { background: var(--bg-glass); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; transition: var(--transition); }
+    .task-card:hover { border-color: rgba(255,255,255,0.15); }
+    .task-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+    .task-card-title { font-size: 14px; font-weight: 700; }
+    .task-card-meta { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+    .task-card-body { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.6; }
+    .task-card-footer { display: flex; align-items: center; justify-content: space-between; }
+    .empty-state { text-align: center; padding: 48px 20px; color: var(--text-muted); }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-title { font-size: 16px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+    .empty-sub { font-size: 13px; }
+    .progress-bar { height: 6px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden; margin-top: 6px; }
+    .progress-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
+    .tag { display: inline-block; padding: 3px 9px; border-radius: 6px; font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.06); color: var(--text-secondary); margin-right: 4px; }
+    .img-zoom-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
+    .img-zoom-overlay.open { display: flex; }
+    .img-zoom-overlay img { max-width: 90%; max-height: 90vh; border-radius: 12px; }
+    .bg-glow { position: fixed; pointer-events: none; z-index: 0; border-radius: 50%; filter: blur(100px); opacity: 0.06; }
+    .bg-glow-1 { width: 600px; height: 600px; background: var(--accent); top: -200px; right: -100px; }
+    .bg-glow-2 { width: 400px; height: 400px; background: var(--purple); bottom: -100px; left: 100px; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-up { animation: fadeUp 0.35s ease; }
+    @media (max-width: 900px) { .grid-3 { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { :root { --sidebar-w: 0px; } .sidebar { position: fixed; transform: translateX(-260px); width: 260px; } .main { margin-left: 0; } .form-grid { grid-template-columns: 1fr; } .header-search { width: 160px; } .stats-grid { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+<div class="bg-glow bg-glow-1"></div>
+<div class="bg-glow bg-glow-2"></div>
+
+<!-- LOGIN -->
+<div class="login-page" id="loginPage">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon">🔧</div>
+      <div class="login-logo-text">Repair<span>Hub</span></div>
+    </div>
+    <h1 class="login-title">ยินดีต้อนรับ</h1>
+    <p class="login-sub">ระบบแจ้งซ่อมและบริหารงานบำรุงรักษา</p>
+    <div class="role-tabs">
+      <button class="role-tab active" id="tab-user" onclick="selectRole('user')">👤 ผู้ใช้</button>
+      <button class="role-tab" id="tab-admin" onclick="selectRole('admin')">🛡️ Admin</button>
+      <button class="role-tab" id="tab-tech" onclick="selectRole('tech')">🔩 ช่าง</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="loginEmail">อีเมล / ชื่อผู้ใช้</label>
+      <input class="form-input" type="text" id="loginEmail" placeholder="กรอกอีเมลหรือชื่อผู้ใช้" />
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="loginPass">รหัสผ่าน</label>
+      <input class="form-input" type="password" id="loginPass" placeholder="กรอกรหัสผ่าน" onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <button class="btn-primary" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <p class="login-hint">
+      ทดสอบ: กรอกอะไรก็ได้แล้วกดเข้าสู่ระบบ<br/>
+      หรือ <strong style="color:var(--accent);cursor:pointer" onclick="demoLogin('admin')">Demo Admin</strong> |
+      <strong style="color:var(--purple);cursor:pointer" onclick="demoLogin('tech')">Demo ช่าง</strong> |
+      <strong style="color:var(--green);cursor:pointer" onclick="demoLogin('user')">Demo ผู้ใช้</strong>
+    </p>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="appPage" style="display:none">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🔧</div>
+      <div class="sidebar-logo-text">Repair<span>Hub</span></div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="sidebarAvatar">U</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebarName">ผู้ใช้</div>
+          <div class="user-role" id="sidebarRole">-</div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()" title="ออกจากระบบ">🚪</button>
+      </div>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="header">
+      <div class="header-title" id="headerTitle">แผงควบคุม</div>
+      <div class="header-search">
+        <span>🔍</span>
+        <input type="text" placeholder="ค้นหาคำร้อง... (Ctrl+K)" id="searchInput" oninput="doSearch(this.value)" />
+      </div>
+      <button class="notif-btn" onclick="toggleNotif()">🔔<span class="notif-dot" id="notifDot"></span></button>
+    </header>
+    <div class="content" id="mainContent"></div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOnBG(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle"></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- IMAGE ZOOM -->
+<div class="img-zoom-overlay" id="imgZoom" onclick="this.classList.remove('open')">
+  <img id="imgZoomSrc" src="" alt="zoom" />
+</div>
+
+<script>
+// ── STATE ──
+let currentRole = 'user';
+let currentUser = {};
+let currentPage = 'dashboard';
+let filterStatus = 'all';
+let pendingImages = [];
+
+// ── DATA ──
+let tickets = [
+  { id:'TK-0001', title:'เครื่องปรับอากาศไม่เย็น', name:'สมชาย มีสุข', phone:'081-234-5678', location:'อาคาร A ห้อง 201', category:'เครื่องปรับอากาศ', priority:'high', status:'inprog', description:'เครื่องปรับอากาศทำงานแต่ไม่เย็น มีเสียงดังผิดปกติ', tech:'วิชัย ช่างเก่ง', date:'2026-09-24', images:[], history:[{action:'แจ้งซ่อม',by:'สมชาย มีสุข',time:'24/09/2026 09:00'},{action:'รับงาน',by:'วิชัย ช่างเก่ง',time:'24/09/2026 10:30'}] },
+  { id:'TK-0002', title:'ท่อน้ำรั่วห้องน้ำ', name:'วิไล สวยงาม', phone:'082-345-6789', location:'อาคาร B ชั้น 3', category:'ประปา', priority:'high', status:'pending', description:'ท่อน้ำใต้อ่างล้างมือรั่ว น้ำหยดตลอดเวลา ต้องการช่างโดยด่วน', tech:'', date:'2026-09-24', images:[], history:[{action:'แจ้งซ่อม',by:'วิไล สวยงาม',time:'24/09/2026 08:30'}] },
+  { id:'TK-0003', title:'ไฟฟ้าในห้องประชุมดับ', name:'อนุชา ดีมาก', phone:'083-456-7890', location:'อาคาร C ห้องประชุมใหญ่', category:'ไฟฟ้า', priority:'mid', status:'done', description:'ไฟฟ้าในห้องประชุมใหญ่ดับทั้งหมด', tech:'สมศักดิ์ ช่างไฟ', date:'2026-09-23', images:[], history:[{action:'แจ้งซ่อม',by:'อนุชา ดีมาก',time:'23/09/2026 14:00'},{action:'รับงาน',by:'สมศักดิ์ ช่างไฟ',time:'23/09/2026 14:30'},{action:'ซ่อมเสร็จ',by:'สมศักดิ์ ช่างไฟ',time:'23/09/2026 16:00',note:'เปลี่ยนเบรกเกอร์ใหม่'}] },
+  { id:'TK-0004', title:'คอมพิวเตอร์เปิดไม่ติด', name:'นิดา ใจดี', phone:'084-567-8901', location:'ห้องปฏิบัติการ IT', category:'คอมพิวเตอร์', priority:'mid', status:'pending', description:'เครื่องคอมหมายเลข IT-045 เปิดไม่ติด กดปุ่มไม่มีสัญญาณ', tech:'', date:'2026-09-24', images:[], history:[{action:'แจ้งซ่อม',by:'นิดา ใจดี',time:'24/09/2026 11:00'}] },
+  { id:'TK-0005', title:'ประตูอาคารปิดไม่สนิท', name:'ประสิทธิ์ ดีงาม', phone:'085-678-9012', location:'อาคาร A ประตูทางเข้าหลัก', category:'งานช่างทั่วไป', priority:'low', status:'inprog', description:'ประตูทางเข้าหลักปิดไม่สนิท บานพับหลวม ลมเข้าในตอนกลางคืน', tech:'วิชัย ช่างเก่ง', date:'2026-09-22', images:[], history:[{action:'แจ้งซ่อม',by:'ประสิทธิ์ ดีงาม',time:'22/09/2026 10:00'},{action:'รับงาน',by:'วิชัย ช่างเก่ง',time:'22/09/2026 11:00'}] },
+  { id:'TK-0006', title:'เน็ตเวิร์คชั้น 4 ใช้ไม่ได้', name:'กมลา สุขสันต์', phone:'086-789-0123', location:'ชั้น 4 โซน B', category:'เครือข่าย', priority:'high', status:'cancelled', description:'อินเทอร์เน็ตในโซน B ชั้น 4 ใช้ไม่ได้ กระทบทีมงาน 20 คน', tech:'', date:'2026-09-21', images:[], history:[{action:'แจ้งซ่อม',by:'กมลา สุขสันต์',time:'21/09/2026 09:00'},{action:'ยกเลิก',by:'Admin',time:'21/09/2026 10:00',note:'พบสาเหตุแล้ว แก้ไขได้เองไม่ต้องส่งช่าง'}] },
+];
+let nextId = 7;
+
+let technicians = [
+  { id:1, name:'วิชัย ช่างเก่ง', spec:'ไฟฟ้า, เครื่องปรับอากาศ, งานทั่วไป', avatar:'ว', color:'linear-gradient(135deg,#38bdf8,#0ea5e9)' },
+  { id:2, name:'สมศักดิ์ ช่างไฟ', spec:'ไฟฟ้า, ระบบแสงสว่าง', avatar:'ส', color:'linear-gradient(135deg,#fbbf24,#fb923c)' },
+  { id:3, name:'มานะ ช่างประปา', spec:'ประปา, สุขภัณฑ์', avatar:'ม', color:'linear-gradient(135deg,#34d399,#059669)' },
+  { id:4, name:'พิษณุ ช่าง IT', spec:'คอมพิวเตอร์, เครือข่าย', avatar:'พ', color:'linear-gradient(135deg,#a78bfa,#7c3aed)' },
+];
+
+const categories = ['เครื่องปรับอากาศ','ไฟฟ้า','ประปา','คอมพิวเตอร์','เครือข่าย','งานช่างทั่วไป','ลิฟต์','อื่นๆ'];
+const statusMap = { pending:{label:'รอดำเนินการ',cls:'badge-pending'}, inprog:{label:'กำลังซ่อม',cls:'badge-inprog'}, done:{label:'เสร็จแล้ว',cls:'badge-done'}, cancelled:{label:'ยกเลิก',cls:'badge-cancelled'} };
+const priorityMap = { high:{label:'เร่งด่วน',cls:'badge-high',icon:'🔴'}, mid:{label:'ปานกลาง',cls:'badge-mid',icon:'🟡'}, low:{label:'ไม่เร่งด่วน',cls:'badge-low',icon:'🟢'} };
+
+// ── AUTH ──
+function selectRole(role) {
+  currentRole = role;
+  document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+role).classList.add('active');
+}
+
+function demoLogin(role) {
+  selectRole(role);
+  document.getElementById('loginEmail').value = role+'@repair.th';
+  document.getElementById('loginPass').value = '1234';
+  setTimeout(doLogin, 150);
+}
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value.trim();
+  if (!email || !pass) { showToast('กรุณากรอกข้อมูลให้ครบ','error'); return; }
+  const roles = {
+    user:  { name:'สมชาย มีสุข',  label:'ผู้ใช้ทั่วไป', avatar:'ส', color:'linear-gradient(135deg,#34d399,#38bdf8)' },
+    admin: { name:'ผู้ดูแลระบบ', label:'Administrator', avatar:'A', color:'linear-gradient(135deg,#f87171,#fb923c)' },
+    tech:  { name:'วิชัย ช่างเก่ง', label:'ช่างซ่อม', avatar:'ว', color:'linear-gradient(135deg,#38bdf8,#0ea5e9)' },
+  };
+  currentUser = { ...roles[currentRole], role: currentRole, email };
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('appPage').style.display = 'flex';
+  initApp();
+}
+
+function doLogout() {
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('appPage').style.display = 'none';
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPass').value = '';
+  currentPage = 'dashboard';
+}
+
+// ── APP ──
+function initApp() {
+  document.getElementById('sidebarName').textContent = currentUser.name;
+  document.getElementById('sidebarRole').textContent = currentUser.label;
+  const av = document.getElementById('sidebarAvatar');
+  av.textContent = currentUser.avatar;
+  av.style.background = currentUser.color;
+  av.style.color = '#fff';
+  buildSidebar();
+  navigateTo('dashboard');
+}
+
+function buildSidebar() {
+  const role = currentUser.role;
+  const pending = tickets.filter(t => t.status === 'pending').length;
+  const myActive = tickets.filter(t => t.tech === currentUser.name && t.status === 'inprog').length;
+  const menus = {
+    user: [{ section:'เมนูหลัก', items:[
+      {id:'dashboard',icon:'📊',label:'แผงควบคุม'},
+      {id:'new-ticket',icon:'➕',label:'แจ้งซ่อมใหม่'},
+      {id:'my-tickets',icon:'📋',label:'คำร้องของฉัน'},
+    ]}],
+    admin: [{ section:'จัดการระบบ', items:[
+      {id:'dashboard',icon:'📊',label:'แผงควบคุม'},
+      {id:'all-tickets',icon:'📋',label:'คำร้องทั้งหมด', badge: pending||''},
+      {id:'technicians',icon:'🔩',label:'ช่างซ่อม'},
+      {id:'new-ticket',icon:'➕',label:'เพิ่มคำร้อง'},
+    ]}],
+    tech: [{ section:'งานของฉัน', items:[
+      {id:'dashboard',icon:'📊',label:'แผงควบคุม'},
+      {id:'my-tasks',icon:'🔨',label:'งานที่ได้รับ', badge: myActive||''},
+      {id:'all-tickets',icon:'📋',label:'ดูคำร้องทั้งหมด'},
+    ]}],
+  };
+  document.getElementById('sidebarNav').innerHTML = (menus[role]||[]).map(sec => `
+    <div class="nav-section">
+      <div class="nav-section-label">${sec.section}</div>
+      ${sec.items.map(item => `
+        <div class="nav-item" id="nav-${item.id}" onclick="navigateTo('${item.id}')">
+          <span class="nav-icon">${item.icon}</span>
+          <span>${item.label}</span>
+          ${item.badge ? `<span class="nav-badge yellow">${item.badge}</span>` : ''}
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function navigateTo(page) {
+  currentPage = page; filterStatus = 'all';
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const el = document.getElementById('nav-'+page);
+  if (el) el.classList.add('active');
+  const titles = { dashboard:'แผงควบคุม','new-ticket':'แจ้งซ่อมใหม่','my-tickets':'คำร้องของฉัน','all-tickets':'คำร้องทั้งหมด',technicians:'ช่างซ่อม','my-tasks':'งานของฉัน' };
+  document.getElementById('headerTitle').textContent = titles[page] || page;
+  const c = document.getElementById('mainContent');
+  if (page === 'dashboard') c.innerHTML = renderDashboard();
+  else if (page === 'new-ticket') { c.innerHTML = renderNewTicket(); pendingImages = []; }
+  else if (page === 'my-tickets') c.innerHTML = renderTicketList();
+  else if (page === 'all-tickets') c.innerHTML = renderAllTickets();
+  else if (page === 'technicians') c.innerHTML = renderTechnicians();
+  else if (page === 'my-tasks') c.innerHTML = renderMyTasks();
+}
+
+// ── DASHBOARD ──
+function renderDashboard() {
+  const total = tickets.length;
+  const pending = tickets.filter(t=>t.status==='pending').length;
+  const inprog = tickets.filter(t=>t.status==='inprog').length;
+  const done = tickets.filter(t=>t.status==='done').length;
+  const cancelled = tickets.filter(t=>t.status==='cancelled').length;
+  const high = tickets.filter(t=>t.priority==='high'&&t.status!=='done'&&t.status!=='cancelled').length;
+  const isAdmin = currentUser.role==='admin';
+  const isTech = currentUser.role==='tech';
+  const myT = isTech ? tickets.filter(t=>t.tech===currentUser.name) : tickets.filter(t=>t.name===currentUser.name);
+  const recent = [...tickets].reverse().slice(0,5);
+  return `
+  <div class="page-header fade-up">
+    <div class="page-title">สวัสดี, ${currentUser.name} 👋</div>
+    <div class="page-subtitle">${new Date().toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
+  </div>
+  <div class="stats-grid fade-up">
+    <div class="stat-card blue"><div class="stat-icon blue">📋</div>
+      <div class="stat-value">${isAdmin?total:myT.length}</div>
+      <div class="stat-label">${isAdmin?'คำร้องทั้งหมด':isTech?'งานทั้งหมด':'คำร้องของฉัน'}</div>
+    </div>
+    <div class="stat-card yellow"><div class="stat-icon yellow">⏳</div>
+      <div class="stat-value">${isAdmin?pending:isTech?myT.filter(t=>t.status==='inprog').length:myT.filter(t=>t.status==='pending').length}</div>
+      <div class="stat-label">${isTech?'กำลังซ่อม':'รอดำเนินการ'}</div>
+    </div>
+    <div class="stat-card blue"><div class="stat-icon blue">🔧</div>
+      <div class="stat-value">${isAdmin?inprog:isTech?myT.filter(t=>t.status==='done').length:myT.filter(t=>t.status==='inprog').length}</div>
+      <div class="stat-label">${isTech&&!isAdmin?'เสร็จแล้ว':'กำลังซ่อม'}</div>
+    </div>
+    <div class="stat-card green"><div class="stat-icon green">✅</div>
+      <div class="stat-value">${isAdmin?done:myT.filter(t=>t.status==='done').length}</div>
+      <div class="stat-label">เสร็จแล้ว</div>
+    </div>
+    ${isAdmin?`<div class="stat-card red"><div class="stat-icon red">🚨</div><div class="stat-value">${high}</div><div class="stat-label">เร่งด่วนค้างอยู่</div></div>`:''}
+  </div>
+  <div class="grid-3 fade-up">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">คำร้องล่าสุด</div>
+        <button class="btn btn-ghost btn-sm" onclick="navigateTo('${isAdmin?'all-tickets':'my-tickets'}')">ดูทั้งหมด →</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>เรื่อง</th><th>สถานที่</th><th>สถานะ</th><th>ความเร่งด่วน</th></tr></thead>
+          <tbody>${recent.map(t=>`
+            <tr style="cursor:pointer" onclick="openDetail('${t.id}')">
+              <td><span class="ticket-id">${t.id}</span></td>
+              <td><div class="td-name">${t.title}</div><div style="font-size:11px;color:var(--text-muted)">${t.name}</div></td>
+              <td>📍 ${t.location}</td>
+              <td><span class="badge ${statusMap[t.status].cls}">${statusMap[t.status].label}</span></td>
+              <td><span class="badge ${priorityMap[t.priority].cls}">${priorityMap[t.priority].icon} ${priorityMap[t.priority].label}</span></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><div class="card-title">สัดส่วนสถานะ</div></div>
+        <div class="card-body">
+          ${[['รอดำเนินการ',pending,'#fbbf24'],['กำลังซ่อม',inprog,'#38bdf8'],['เสร็จแล้ว',done,'#34d399'],['ยกเลิก',cancelled,'#f87171']].map(([l,v,c])=>`
+          <div style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+              <span style="color:var(--text-secondary)">${l}</span><span style="color:${c};font-weight:700">${v}</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${total?Math.round(v/total*100):0}%;background:${c}"></div></div>
+          </div>`).join('')}
+        </div>
+      </div>
+      ${isAdmin?`<div class="card"><div class="card-header"><div class="card-title">ทีมช่าง</div></div><div class="card-body">
+        ${technicians.map(t=>{const a=tickets.filter(tk=>tk.tech===t.name&&tk.status==='inprog').length;return`<div class="tech-card"><div class="tech-avatar" style="background:${t.color};color:#fff">${t.avatar}</div><div class="tech-info"><div class="tech-name">${t.name}</div><div class="tech-spec">${t.spec}</div></div><div class="tech-stat"><strong>${a}</strong>งาน</div></div>`}).join('')}
+      </div></div>`:''}
+    </div>
+  </div>`;
+}
+
+// ── NEW TICKET ──
+function renderNewTicket() {
+  return `
+  <div class="page-header fade-up"><div class="page-title">แจ้งซ่อมใหม่</div><div class="page-subtitle">กรอกข้อมูลให้ครบถ้วนเพื่อให้ช่างดำเนินการได้รวดเร็ว</div></div>
+  <div class="card fade-up" style="max-width:720px">
+    <div class="card-header"><div class="card-title">📝 รายละเอียดการแจ้งซ่อม</div></div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div>
+          <label class="form-label" for="nt-name">ชื่อผู้แจ้ง *</label>
+          <input class="form-input-styled" id="nt-name" placeholder="ชื่อ-นามสกุล" value="${currentUser.name}" />
+        </div>
+        <div>
+          <label class="form-label" for="nt-phone">เบอร์โทรศัพท์</label>
+          <input class="form-input-styled" id="nt-phone" placeholder="0XX-XXX-XXXX" />
+        </div>
+        <div class="form-full">
+          <label class="form-label" for="nt-title">หัวข้อปัญหา *</label>
+          <input class="form-input-styled" id="nt-title" placeholder="อธิบายปัญหาโดยสรุป เช่น เครื่องปรับอากาศไม่เย็น" />
+        </div>
+        <div>
+          <label class="form-label" for="nt-location">สถานที่ *</label>
+          <input class="form-input-styled" id="nt-location" placeholder="อาคาร / ห้อง / ชั้น" />
+        </div>
+        <div>
+          <label class="form-label" for="nt-category">ประเภทงาน *</label>
+          <select class="form-input-styled" id="nt-category">
+            <option value="">-- เลือกประเภท --</option>
+            ${categories.map(c=>`<option>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label class="form-label" for="nt-priority">ความเร่งด่วน</label>
+          <select class="form-input-styled" id="nt-priority">
+            <option value="low">🟢 ไม่เร่งด่วน</option>
+            <option value="mid" selected>🟡 ปานกลาง</option>
+            <option value="high">🔴 เร่งด่วน</option>
+          </select>
+        </div>
+        <div class="form-full">
+          <label class="form-label" for="nt-desc">รายละเอียดปัญหา *</label>
+          <textarea class="form-input-styled" id="nt-desc" placeholder="อธิบายปัญหาอย่างละเอียด เช่น อาการที่พบ เกิดขึ้นตั้งแต่เมื่อไหร่..."></textarea>
+        </div>
+        <div class="form-full">
+          <label class="form-label">อัปโหลดรูปภาพ</label>
+          <div class="file-upload" onclick="document.getElementById('ntImg').click()">
+            <div class="file-upload-icon">📷</div>
+            <div class="file-upload-text">คลิกหรือลากไฟล์มาที่นี่</div>
+            <div class="file-upload-hint">รองรับ JPG, PNG (สูงสุด 5MB)</div>
+          </div>
+          <input type="file" id="ntImg" accept="image/*" multiple style="display:none" onchange="handleImg(event)" />
+          <div class="image-preview-grid" id="imgGrid"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+        <button class="btn btn-accent" onclick="submitTicket()">📤 ส่งคำร้อง</button>
+        <button class="btn btn-ghost" onclick="navigateTo('dashboard')">ยกเลิก</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function handleImg(e) {
+  Array.from(e.target.files).forEach(f => {
+    const r = new FileReader();
+    r.onload = ev => { pendingImages.push(ev.target.result); renderImgGrid(); };
+    r.readAsDataURL(f);
+  });
+}
+
+function renderImgGrid() {
+  const g = document.getElementById('imgGrid');
+  if (!g) return;
+  g.innerHTML = pendingImages.map((s,i) => `<div class="image-preview-item"><img src="${s}" /><div class="image-remove" onclick="removeImg(${i})">✕</div></div>`).join('');
+}
+
+function removeImg(i) { pendingImages.splice(i,1); renderImgGrid(); }
+
+function submitTicket() {
+  const name = document.getElementById('nt-name').value.trim();
+  const phone = document.getElementById('nt-phone').value.trim();
+  const title = document.getElementById('nt-title').value.trim();
+  const location = document.getElementById('nt-location').value.trim();
+  const category = document.getElementById('nt-category').value;
+  const priority = document.getElementById('nt-priority').value;
+  const desc = document.getElementById('nt-desc').value.trim();
+  if (!name||!title||!location||!category||!desc) { showToast('กรุณากรอกข้อมูลที่จำเป็นให้ครบ (*)','error'); return; }
+  const id = 'TK-'+String(nextId++).padStart(4,'0');
+  const now = new Date().toLocaleString('th-TH');
+  tickets.unshift({ id, title, name, phone, location, category, priority, status:'pending', description:desc, tech:'', date:new Date().toISOString().split('T')[0], images:[...pendingImages], history:[{action:'แจ้งซ่อม',by:name,time:now}] });
+  buildSidebar();
+  showToast(`✅ ส่งคำร้อง ${id} เรียบร้อยแล้ว!`, 'success');
+  navigateTo('my-tickets');
+}
+
+// ── MY TICKETS ──
+function renderTicketList() {
+  const list = tickets.filter(t => currentUser.role==='admin' || t.name===currentUser.name);
+  const filtered = filterStatus==='all' ? list : list.filter(t=>t.status===filterStatus);
+  return `
+  <div class="page-header fade-up"><div class="page-title">คำร้องของฉัน</div><div class="page-subtitle">ติดตามสถานะคำร้องซ่อมทั้งหมด</div></div>
+  <div class="fade-up">
+    <div class="filter-bar">
+      ${['all','pending','inprog','done','cancelled'].map(s=>`
+        <button class="filter-pill ${filterStatus===s?'active':''}" onclick="setFilter('${s}','my-tickets')">
+          ${s==='all'?'📋 ทั้งหมด':statusMap[s].label} (${s==='all'?list.length:list.filter(t=>t.status===s).length})
+        </button>`).join('')}
+      <div style="margin-left:auto"><button class="btn btn-accent btn-sm" onclick="navigateTo('new-ticket')">➕ แจ้งซ่อมใหม่</button></div>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>หัวข้อ</th><th>สถานที่</th><th>ประเภท</th><th>ความเร่งด่วน</th><th>สถานะ</th><th>วันที่</th><th></th></tr></thead>
+          <tbody>${filtered.length?filtered.map(t=>`
+            <tr>
+              <td><span class="ticket-id">${t.id}</span></td>
+              <td><div class="td-name">${t.title}</div></td>
+              <td>📍 ${t.location}</td>
+              <td><span class="tag">${t.category}</span></td>
+              <td><span class="badge ${priorityMap[t.priority].cls}">${priorityMap[t.priority].icon} ${priorityMap[t.priority].label}</span></td>
+              <td><span class="badge ${statusMap[t.status].cls}">${statusMap[t.status].label}</span></td>
+              <td style="color:var(--text-muted)">${t.date}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="openDetail('${t.id}')">ดูรายละเอียด</button></td>
+            </tr>`).join(''):`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">ไม่พบคำร้อง</div></div></td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── ALL TICKETS ──
+function renderAllTickets() {
+  const filtered = filterStatus==='all' ? tickets : tickets.filter(t=>t.status===filterStatus);
+  const isAdmin = currentUser.role==='admin';
+  return `
+  <div class="page-header fade-up"><div class="page-title">คำร้องทั้งหมด</div><div class="page-subtitle">จัดการและติดตามคำร้องซ่อมทั้งหมดในระบบ</div></div>
+  <div class="fade-up">
+    <div class="filter-bar">
+      ${['all','pending','inprog','done','cancelled'].map(s=>`
+        <button class="filter-pill ${filterStatus===s?'active':''}" onclick="setFilter('${s}','all-tickets')">
+          ${s==='all'?'📋 ทั้งหมด':statusMap[s].label} (${s==='all'?tickets.length:tickets.filter(t=>t.status===s).length})
+        </button>`).join('')}
+      ${isAdmin?`<div style="margin-left:auto"><button class="btn btn-accent btn-sm" onclick="navigateTo('new-ticket')">➕ เพิ่มคำร้อง</button></div>`:''}
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>หัวข้อ</th><th>ผู้แจ้ง</th><th>สถานที่</th><th>ประเภท</th><th>ความเร่งด่วน</th><th>สถานะ</th><th>ช่าง</th><th>วันที่</th><th>จัดการ</th></tr></thead>
+          <tbody>${filtered.length?filtered.map(t=>`
+            <tr>
+              <td><span class="ticket-id">${t.id}</span></td>
+              <td><div class="td-name" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.title}</div></td>
+              <td>${t.name}</td>
+              <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📍 ${t.location}</td>
+              <td><span class="tag">${t.category}</span></td>
+              <td><span class="badge ${priorityMap[t.priority].cls}">${priorityMap[t.priority].icon}</span></td>
+              <td><span class="badge ${statusMap[t.status].cls}">${statusMap[t.status].label}</span></td>
+              <td style="font-size:12px;color:var(--text-muted)">${t.tech||'-'}</td>
+              <td style="font-size:12px;color:var(--text-muted)">${t.date}</td>
+              <td><div class="action-row">
+                <button class="btn btn-ghost btn-sm btn-icon" onclick="openDetail('${t.id}')" title="รายละเอียด">👁️</button>
+                ${isAdmin&&t.status==='pending'?`<button class="btn btn-ghost btn-sm btn-icon" onclick="openAssign('${t.id}')" title="มอบหมาย">🔩</button>`:''}
+                ${isAdmin&&t.status!=='done'&&t.status!=='cancelled'?`<button class="btn btn-ghost btn-sm btn-icon btn-red" onclick="doCancel('${t.id}')" title="ยกเลิก">✕</button>`:''}
+              </div></td>
+            </tr>`).join(''):`<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">ไม่พบคำร้อง</div></div></td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── TECHNICIANS ──
+function renderTechnicians() {
+  return `
+  <div class="page-header fade-up"><div class="page-title">ช่างซ่อม</div><div class="page-subtitle">จัดการทีมช่างและมอบหมายงาน</div></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px" class="fade-up">
+    ${technicians.map(tc=>{
+      const myT = tickets.filter(t=>t.tech===tc.name);
+      const done = myT.filter(t=>t.status==='done').length;
+      const active = myT.filter(t=>t.status==='inprog').length;
+      const pct = myT.length?Math.round(done/myT.length*100):0;
+      return `<div class="card"><div class="card-body">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+          <div style="width:56px;height:56px;border-radius:50%;background:${tc.color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;flex-shrink:0">${tc.avatar}</div>
+          <div><div style="font-size:15px;font-weight:700">${tc.name}</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">${tc.spec}</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;text-align:center">
+          <div style="background:var(--bg-glass);border-radius:8px;padding:10px"><div style="font-size:20px;font-weight:800;color:var(--accent)">${myT.length}</div><div style="font-size:11px;color:var(--text-muted)">ทั้งหมด</div></div>
+          <div style="background:var(--accent-glow);border-radius:8px;padding:10px"><div style="font-size:20px;font-weight:800;color:var(--accent)">${active}</div><div style="font-size:11px;color:var(--text-muted)">กำลังซ่อม</div></div>
+          <div style="background:var(--green-glow);border-radius:8px;padding:10px"><div style="font-size:20px;font-weight:800;color:var(--green)">${done}</div><div style="font-size:11px;color:var(--text-muted)">เสร็จ</div></div>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:5px">อัตราความสำเร็จ ${pct}%</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--green)"></div></div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="openTechJobs('${tc.name}')">ดูงาน</button>
+          <button class="btn btn-accent btn-sm" style="flex:1" onclick="openAssignToTech('${tc.name}')">มอบหมาย</button>
+        </div>
+      </div></div>`;
+    }).join('')}
+  </div>`;
+}
+
+function openTechJobs(name) {
+  const list = tickets.filter(t=>t.tech===name);
+  openModal(`งานของ ${name}`, `<div class="table-wrap"><table>
+    <thead><tr><th>ID</th><th>หัวข้อ</th><th>สถานะ</th><th>วันที่</th></tr></thead>
+    <tbody>${list.length?list.map(t=>`<tr><td><span class="ticket-id">${t.id}</span></td><td>${t.title}</td><td><span class="badge ${statusMap[t.status].cls}">${statusMap[t.status].label}</span></td><td>${t.date}</td></tr>`).join(''):`<tr><td colspan="4"><div class="empty-state" style="padding:20px"><div class="empty-icon">📭</div><div class="empty-title">ยังไม่มีงาน</div></div></td></tr>`}
+    </tbody></table></div>`, [{label:'ปิด',cls:'btn btn-ghost',action:closeModal}]);
+}
+
+function openAssignToTech(techName) {
+  const pending = tickets.filter(t=>t.status==='pending');
+  if (!pending.length) { showToast('ไม่มีคำร้องรอดำเนินการ','info'); return; }
+  openModal(`มอบหมายงานให้ ${techName}`, `
+    <p style="color:var(--text-secondary);margin-bottom:14px;font-size:13px">เลือกคำร้องที่ต้องการมอบหมาย</p>
+    <select class="form-input-styled" id="atSelect">
+      ${pending.map(t=>`<option value="${t.id}">${t.id} — ${t.title}</option>`).join('')}
+    </select>`,
+    [{label:'มอบหมาย',cls:'btn btn-accent',action:()=>{
+      const sel = document.getElementById('atSelect').value;
+      const t = tickets.find(t=>t.id===sel);
+      if (!t) return;
+      t.tech=techName; t.status='inprog';
+      t.history.push({action:`มอบหมายให้ ${techName}`,by:'Admin',time:new Date().toLocaleString('th-TH')});
+      closeModal(); showToast(`✅ มอบหมาย ${sel} ให้ ${techName}`, 'success');
+      buildSidebar(); navigateTo('technicians');
+    }},{label:'ยกเลิก',cls:'btn btn-ghost',action:closeModal}]);
+}
+
+// ── MY TASKS ──
+function renderMyTasks() {
+  const myT = tickets.filter(t=>t.tech===currentUser.name);
+  const active = myT.filter(t=>t.status==='inprog');
+  const done = myT.filter(t=>t.status==='done');
+  const taskCard = t => `
+    <div class="task-card">
+      <div class="task-card-header">
+        <div>
+          <div class="task-card-title">${t.title}</div>
+          <div class="task-card-meta">📍 ${t.location} · <span class="tag">${t.category}</span> · ${t.date}</div>
+        </div>
+        <span class="badge ${statusMap[t.status].cls}">${statusMap[t.status].label}</span>
+      </div>
+      <div class="task-card-body">${t.description}</div>
+      <div class="task-card-footer">
+        <div style="font-size:12px;color:var(--text-muted)">ผู้แจ้ง: ${t.name}${t.phone?' · 📞 '+t.phone:''}</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="openDetail('${t.id}')">รายละเอียด</button>
+          ${t.status==='inprog'?`<button class="btn btn-green btn-sm" onclick="markDone('${t.id}')">✅ ซ่อมเสร็จ</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  return `
+  <div class="page-header fade-up"><div class="page-title">งานของฉัน</div><div class="page-subtitle">งานที่ได้รับมอบหมาย</div></div>
+  <div class="fade-up">
+    <div style="margin-bottom:20px">
+      <div style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:10px">🔧 กำลังดำเนินการ (${active.length})</div>
+      ${active.length?active.map(taskCard).join(''):`<div class="empty-state" style="padding:24px"><div class="empty-icon">🎉</div><div class="empty-title">ไม่มีงานค้างอยู่</div></div>`}
+    </div>
+    <div>
+      <div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:10px">✅ เสร็จแล้ว (${done.length})</div>
+      ${done.length?done.map(taskCard).join(''):`<div class="empty-state" style="padding:24px"><div class="empty-icon">📭</div><div class="empty-title">ยังไม่มีงานที่เสร็จ</div></div>`}
+    </div>
+  </div>`;
+}
+
+function markDone(id) {
+  const t = tickets.find(t=>t.id===id);
+  if (!t) return;
+  openModal('✅ ยืนยันซ่อมเสร็จ', `
+    <p style="color:var(--text-secondary);margin-bottom:14px">ยืนยันว่าซ่อม <strong>${t.title}</strong> เสร็จแล้ว?</p>
+    <label class="form-label" for="doneNote">บันทึกเพิ่มเติม (ไม่บังคับ)</label>
+    <textarea class="form-input-styled" id="doneNote" placeholder="อาการที่พบและวิธีแก้ไข..."></textarea>`,
+    [{label:'ยืนยันเสร็จ',cls:'btn btn-accent',action:()=>{
+      const note = document.getElementById('doneNote').value;
+      t.status='done';
+      t.history.push({action:'ซ่อมเสร็จแล้ว'+(note?`: ${note}`:''),by:currentUser.name,time:new Date().toLocaleString('th-TH')});
+      closeModal(); showToast('✅ บันทึกงานซ่อมเสร็จ!','success');
+      buildSidebar(); navigateTo('my-tasks');
+    }},{label:'ยกเลิก',cls:'btn btn-ghost',action:closeModal}]);
+}
+
+// ── DETAIL ──
+function openDetail(id) {
+  const t = tickets.find(t=>t.id===id);
+  if (!t) return;
+  const isAdmin = currentUser.role==='admin';
+  const isTech = currentUser.role==='tech';
+  openModal(`รายละเอียดคำร้อง ${t.id}`, `
+    <div class="detail-row"><div class="detail-label">สถานะ</div><div class="detail-value"><span class="badge ${statusMap[t.status].cls}">${statusMap[t.status].label}</span></div></div>
+    <div class="detail-row"><div class="detail-label">ความเร่งด่วน</div><div class="detail-value"><span class="badge ${priorityMap[t.priority].cls}">${priorityMap[t.priority].icon} ${priorityMap[t.priority].label}</span></div></div>
+    <div class="detail-row"><div class="detail-label">หัวข้อ</div><div class="detail-value" style="font-weight:700">${t.title}</div></div>
+    <div class="detail-row"><div class="detail-label">ผู้แจ้ง</div><div class="detail-value">${t.name}${t.phone?` <span style="color:var(--text-muted)">· 📞 ${t.phone}</span>`:''}</div></div>
+    <div class="detail-row"><div class="detail-label">สถานที่</div><div class="detail-value">📍 ${t.location}</div></div>
+    <div class="detail-row"><div class="detail-label">ประเภท</div><div class="detail-value"><span class="tag">${t.category}</span></div></div>
+    <div class="detail-row"><div class="detail-label">รายละเอียด</div><div class="detail-value" style="line-height:1.7">${t.description}</div></div>
+    <div class="detail-row"><div class="detail-label">ช่างรับผิดชอบ</div><div class="detail-value">${t.tech||'<span style="color:var(--text-muted)">ยังไม่ได้มอบหมาย</span>'}</div></div>
+    <div class="detail-row"><div class="detail-label">วันที่แจ้ง</div><div class="detail-value">${t.date}</div></div>
+    ${t.images&&t.images.length?`<div class="detail-row"><div class="detail-label">รูปภาพ</div><div class="detail-value"><div style="display:flex;gap:8px;flex-wrap:wrap">${t.images.map(s=>`<img class="detail-img" src="${s}" onclick="zoomImg('${s}')" />`).join('')}</div></div></div>`:''}
+    <div style="margin-top:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">ประวัติดำเนินการ</div>
+      <div class="timeline">
+        ${t.history.map(h=>`<div class="timeline-item"><div class="timeline-dot">📌</div><div class="timeline-content"><div class="timeline-title">${h.action}</div><div class="timeline-time">${h.by} · ${h.time}</div>${h.note?`<div style="font-size:12px;color:var(--text-secondary);margin-top:4px">${h.note}</div>`:''}</div></div>`).join('')}
+      </div>
+    </div>`,
+    [
+      ...(isAdmin&&t.status==='pending'?[{label:'🔩 มอบหมายช่าง',cls:'btn btn-accent',action:()=>{closeModal();openAssign(t.id);}}]:[]),
+      ...(isTech&&t.status==='inprog'&&t.tech===currentUser.name?[{label:'✅ ซ่อมเสร็จ',cls:'btn btn-accent',action:()=>{closeModal();markDone(t.id);}}]:[]),
+      {label:'ปิด',cls:'btn btn-ghost',action:closeModal}
+    ]);
+}
+
+// ── ASSIGN ──
+function openAssign(id) {
+  const t = tickets.find(t=>t.id===id);
+  if (!t) return;
+  openModal(`🔩 มอบหมายช่าง — ${id}`, `
+    <p style="color:var(--text-secondary);margin-bottom:14px;font-size:13px">เลือกช่างสำหรับ <strong>${t.title}</strong></p>
+    <select class="form-input-styled" id="techSel">
+      <option value="">-- เลือกช่างซ่อม --</option>
+      ${technicians.map(tc=>`<option value="${tc.name}">${tc.name} (${tc.spec})</option>`).join('')}
+    </select>`,
+    [{label:'มอบหมาย',cls:'btn btn-accent',action:()=>{
+      const name = document.getElementById('techSel').value;
+      if (!name) { showToast('กรุณาเลือกช่างซ่อม','error'); return; }
+      t.tech=name; t.status='inprog';
+      t.history.push({action:`มอบหมายให้ ${name}`,by:'Admin',time:new Date().toLocaleString('th-TH')});
+      closeModal(); showToast(`✅ มอบหมาย ${id} ให้ ${name}`, 'success');
+      buildSidebar();
+      if (currentPage==='all-tickets') navigateTo('all-tickets');
+    }},{label:'ยกเลิก',cls:'btn btn-ghost',action:closeModal}]);
+}
+
+function doCancel(id) {
+  const t = tickets.find(t=>t.id===id);
+  if (!t) return;
+  openModal('ยืนยันยกเลิกคำร้อง', `
+    <p style="color:var(--text-secondary)">ต้องการยกเลิกคำร้อง <strong>${id}</strong> ใช่หรือไม่?</p>
+    <div style="margin-top:12px">
+      <label class="form-label" for="cancelNote">เหตุผล (ไม่บังคับ)</label>
+      <input class="form-input-styled" id="cancelNote" placeholder="ระบุเหตุผล..." />
+    </div>`,
+    [{label:'ยืนยันยกเลิก',cls:'btn btn-red',action:()=>{
+      const note = document.getElementById('cancelNote').value;
+      t.status='cancelled';
+      t.history.push({action:'ยกเลิกคำร้อง',by:'Admin',time:new Date().toLocaleString('th-TH'),note});
+      closeModal(); showToast(`คำร้อง ${id} ถูกยกเลิกแล้ว`,'info');
+      buildSidebar(); navigateTo('all-tickets');
+    }},{label:'ไม่ยกเลิก',cls:'btn btn-ghost',action:closeModal}]);
+}
+
+// ── FILTER ──
+function setFilter(status, page) {
+  filterStatus = status;
+  navigateTo(page);
+}
+
+// ── SEARCH ──
+function doSearch(q) {
+  if (!q.trim()) { navigateTo(currentPage); return; }
+  const r = tickets.filter(t=>[t.title,t.id,t.name,t.location,t.category,t.description].join(' ').toLowerCase().includes(q.toLowerCase()));
+  document.getElementById('mainContent').innerHTML = `
+    <div class="page-header"><div class="page-title">🔍 ผลการค้นหา "${q}"</div><div class="page-subtitle">พบ ${r.length} รายการ</div></div>
+    <div class="card fade-up"><div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>หัวข้อ</th><th>ผู้แจ้ง</th><th>สถานที่</th><th>สถานะ</th><th></th></tr></thead>
+      <tbody>${r.length?r.map(t=>`
+        <tr><td><span class="ticket-id">${t.id}</span></td><td><div class="td-name">${t.title}</div></td><td>${t.name}</td><td>📍 ${t.location}</td><td><span class="badge ${statusMap[t.status].cls}">${statusMap[t.status].label}</span></td><td><button class="btn btn-ghost btn-sm" onclick="openDetail('${t.id}')">รายละเอียด</button></td></tr>`).join('')
+        :`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">ไม่พบผลการค้นหา</div></div></td></tr>`}
+      </tbody>
+    </table></div></div>`;
+}
+
+// ── MODAL ──
+function openModal(title, body, btns=[]) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = body;
+  document.getElementById('modalFooter').innerHTML = btns.map((b,i)=>`<button class="${b.cls}" id="mb${i}">${b.label}</button>`).join('');
+  btns.forEach((b,i)=>{ document.getElementById('mb'+i).onclick=b.action; });
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function closeModalOnBG(e) { if (e.target===document.getElementById('modalOverlay')) closeModal(); }
+
+// ── TOAST ──
+function showToast(msg, type='info') {
+  const icons = {success:'✅',error:'❌',info:'ℹ️'};
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icons[type]}</span><span>${msg}</span>`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(()=>el.classList.add('show'),10);
+  setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(),300); }, 3500);
+}
+
+// ── IMAGE ZOOM ──
+function zoomImg(src) {
+  document.getElementById('imgZoomSrc').src = src;
+  document.getElementById('imgZoom').classList.add('open');
+}
+
+// ── NOTIF ──
+function toggleNotif() {
+  const n = tickets.filter(t=>t.status==='pending').length;
+  showToast(`🔔 คำร้องรอดำเนินการ ${n} รายการ`,'info');
+}
+
+// ── KEYBOARD ──
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') closeModal();
+  if ((e.ctrlKey||e.metaKey)&&e.key==='k') { e.preventDefault(); document.getElementById('searchInput')?.focus(); }
+});
+</script>
+</body>
+</html>
